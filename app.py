@@ -125,7 +125,7 @@ feature_columns = joblib.load('feature_columns.pkl')
 
 @st.cache_data
 def load_data():
-    return pd.read_csv('creditcard.csv')
+    return pd.read_csv('creditcard.csv.gz')
 
 
 @st.cache_data
