@@ -1,111 +1,125 @@
-<div align="center">
+# Credit Card Fraud Detection
 
-# 🧠 AttritionSense
-### Predicting Employee Attrition Before It Happens
+A ML-powered credit card fraud detection system built for real-time transaction risk scoring using Logistic Regression, Random Forest, Decision Tree, and KNN — with an interactive **Fraud Shield** dashboard built in Streamlit.
 
-An end-to-end machine learning system that flags at-risk employees using HR data — turning reactive HR into proactive retention strategy.
-
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](#license)
-
-[**Live Demo**](https://ibm-attrition-predictor.streamlit.app/) · [**Report a Bug**](#) · [**Notebook**](./IBM_Attrition.ipynb)
-
-</div>
+Pick a real transaction from the dataset and instantly get an AI-powered fraud risk prediction with probability scores and the key factors driving the decision.
 
 ---
 
-## Why This Matters
+## Features
 
-Replacing an employee typically costs **50–200% of their annual salary** once you factor in recruiting, onboarding, and lost productivity. Most companies only find out someone is a flight risk *after* they've already resigned.
-
-**AttritionSense** flips that timeline — it scores every employee's attrition risk in real time from HR data that companies already collect, so HR teams can intervene weeks or months before someone walks out the door.
-
-<div align="center">
-<img src="https://github.com/nikhil-kumarrr/images/blob/main/Screenshot%202026-07-02%20132132.png?raw=true" width="800"/>
-</div>
-
----
-
-## What It Does
-
-- Takes an employee's profile (role, income, tenure, satisfaction scores, overtime status, etc.)
-- Runs it through a trained Logistic Regression model
-- Returns a **calibrated attrition probability**, a risk tier (Low / Medium / High), and a **suggested HR action plan**
-- Built as an interactive Streamlit dashboard — no coding required to use it
-
-<div align="center">
-<img src="https://github.com/nikhil-kumarrr/images/blob/main/Screenshot%202026-07-02%20132207.png?raw=true" width="800"/>
-</div>
+- ML-based real-time transaction fraud risk prediction
+- 4 models trained and compared (Logistic Regression · Decision Tree · Random Forest · KNN)
+- Instant risk classification with probability scores
+- Fraud probability gauge, risk factor breakdown
+- Real transaction sampling (random / known legit / known fraud) — no fake or simulated inputs
+- Professional dark UI dashboard
+- Uses real-world Kaggle Credit Card Fraud dataset (284,807 transactions)
+- Real-time prediction engine with saved model artifacts
 
 ---
 
-## Results
+## How It Works
 
-Four models were trained and compared using 5-fold stratified cross-validation on the IBM HR Analytics dataset (1,470 employees):
+### 1️⃣ Dataset
 
-| Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
-|---|:---:|:---:|:---:|:---:|:---:|
-| 🏆 **Logistic Regression** | **86.4%** | 62.1% | 38.3% | **47.4%** | **82.9%** |
-| Gradient Boosting | 84.7% | 52.9% | 38.3% | 44.4% | 78.4% |
-| Random Forest | 83.7% | 48.2% | 27.7% | 35.1% | 77.3% |
-| Decision Tree | 76.9% | 31.6% | 38.3% | 34.6% | 71.4% |
+**creditcard.csv** — 284,807 European cardholder transactions (Sept 2013), features anonymized via PCA
 
-**Logistic Regression won** — not because it's the most powerful algorithm, but because it had the best F1/ROC-AUC *and* gives HR stakeholders interpretable coefficients ("overtime increases risk by X") instead of a black box. In an HR context, explainability is often as important as raw accuracy.
+| Feature | Description |
+|---|---|
+| Time | Seconds elapsed since first transaction in dataset |
+| Amount | Transaction amount ($) |
+| V1–V28 | Anonymized PCA-transformed features |
+| Class | **Target** — Fraud (1) / Legit (0) |
 
-> **Honest caveat:** Recall (38.3%) means the model still misses roughly 6 in 10 employees who actually leave. This is a known challenge with attrition data — the signal is inherently noisy because people leave for reasons no dataset captures (a competing offer, a personal move, a bad manager interaction last week). SMOTE was used to address class imbalance during training; further gains would likely need richer features (engagement survey text, manager 1:1 notes, market salary benchmarks) rather than a different algorithm.
+---
+
+### 2️⃣ Data Processing (Notebook)
+
+- Checked for missing values and duplicates
+- Feature scaling → `StandardScaler` applied separately to `Amount` and `Time`
+- Class imbalance handling → Undersampling (492 fraud vs. 492 randomly sampled legit transactions)
+- Train-test split → 80/20, stratified by target
+- **Real-world evaluation** → Same trained model re-evaluated on the full imbalanced holdout set (excluding training rows) to measure true production-level performance
+
+---
+
+### 3️⃣ EDA Performed
+
+- Class distribution (Fraud vs Legit) — highlighting extreme imbalance (~0.17%)
+- Transaction Amount distribution by class
+- Transaction Time patterns for fraud vs legit
+- Correlation heatmap across PCA features
+
+---
+
+### 4️⃣ ML Models
+
+- **4 Models Trained** → Logistic Regression, Decision Tree, Random Forest, KNN
+- **Evaluation** → Confusion Matrix, Precision-Recall, ROC-AUC on balanced test set, followed by real-world imbalanced holdout evaluation
+- **Best Model** → Logistic Regression (Accuracy: 93.4% | ROC-AUC: 0.978, lowest overfitting)
+- **Saved as** → `fraud_detection_model.pkl` + `scaler_amount.pkl` + `scaler_time.pkl` + `feature_columns.pkl`
+
+---
+
+## Model Results
+
+| Model | Accuracy | ROC-AUC | Notes |
+|---|---|---|---|
+| **Logistic Regression** | **93.4%** | **0.978** | Lowest overfitting, most reliable |
+| Random Forest | ~93% | 0.979 | Comparable AUC, signs of overfitting |
+| Decision Tree | Lower | Lower | Overfit the most |
+| KNN | Lower | Lower | Least consistent |
+
+> Logistic Regression selected as best model — lowest overfitting among all models tested, with directly interpretable coefficients.
+
+**Real-world holdout check** (full imbalanced dataset, 98 fraud cases out of 284,020 transactions):
+
+| Metric | Score |
+|---|---|
+| Recall (Fraud) | 89.8% |
+| Precision (Fraud) | 0.96% |
+| ROC-AUC | 0.977 |
+| PR-AUC | 0.354 |
+
+> Balanced-test metrics look strong, but they don't reflect production. On the true imbalanced distribution, the model catches most fraud (high recall) but flags many false positives (low precision) — a known trade-off of undersampling on extreme class imbalance.
 
 ---
 
 ## Key Findings
 
-- **Overtime is the single strongest driver** — employees working overtime leave at a substantially higher rate
-- **Job satisfaction and work-life balance scores** are strong early-warning signals, often more predictive than income
-- **Pay relative to role/experience** matters more than absolute salary — being underpaid *for your level* drives attrition
-- **Tenure is protective** — attrition risk drops sharply after the first couple of years
-- **Sales Representatives** show a notably higher attrition rate than any other role, worth a targeted retention strategy
+- A handful of anonymized PCA features (V-columns) drive most of the model's decisions, far more than raw Amount or Time
+- Undersampling enables fast, effective training but must be paired with imbalanced-data evaluation, or reported metrics silently overstate real-world performance
+- The model generalizes well by ROC-AUC (0.977) even though precision at the default threshold is low — this reflects the extreme class imbalance, not poor model quality
+- Threshold tuning or cost-sensitive learning would be the natural next step to improve precision without sacrificing recall
 
 ---
 
-## How It's Built
+## Tech Stack
 
-**Pipeline:**
-```
-Raw HR data → Cleaning & feature engineering → Encoding & scaling
-→ SMOTE (train set only) → Train 4 models w/ 5-fold CV
-→ Select best model → Serialize (model/scaler/columns) → Serve via Streamlit
-```
-
-**Feature engineering highlights:**
-- Dropped constant/leak-prone columns (`EmployeeCount`, `Over18`, `StandardHours`, `EmployeeNumber`)
-- Engineered features: `TenureRatio`, `PromotionGap`, `SatisfactionScore`, `IncomePerYear`
-- Class imbalance handled with **SMOTE — applied only to the training fold**, never the test set, to avoid inflating evaluation metrics with synthetic leakage
-
-| Layer | Tool |
+| Tool | Purpose |
 |---|---|
-| Language | Python |
-| Data wrangling | Pandas, NumPy |
-| EDA | Matplotlib, Seaborn |
-| Modeling | scikit-learn |
-| Imbalance handling | imbalanced-learn (SMOTE) |
-| Serialization | Joblib |
-| Dashboard | Streamlit |
+| Python | Core language |
+| Pandas & NumPy | Data manipulation |
+| Matplotlib & Seaborn | EDA visualizations |
+| Scikit-learn | ML models, preprocessing, evaluation |
+| Joblib | Model serialization |
+| Streamlit | Interactive web dashboard |
 
 ---
 
 ## Project Structure
-
 ```
-attrition-predictor/
+Credit Card Fraud Detection/
 │
-├── app.py                                   ← Streamlit dashboard
-├── IBM_Attrition.ipynb                      ← Full ML pipeline notebook
-├── WA_Fn-UseC_-HR-Employee-Attrition.csv     ← Raw dataset
+├── app.py ← Streamlit dashboard
+├── Credit_Card_Fraud_Detection.ipynb ← Full ML pipeline + real-world evaluation
+├── creditcard.csv.gz ← Compressed dataset (284K+ transactions)
 │
-├── model.pkl                                ← Trained Logistic Regression model
-├── scaler.pkl                               ← StandardScaler
-├── columns.pkl                              ← Feature name/order list
+├── fraud_detection_model.pkl ← Trained Logistic Regression model
+├── scaler_amount.pkl ← StandardScaler for Amount
+├── scaler_time.pkl ← StandardScaler for Time
+├── feature_columns.pkl ← Feature name/order list
 │
 ├── requirements.txt
 └── README.md
@@ -113,52 +127,66 @@ attrition-predictor/
 
 ---
 
-## Run It Locally
+## Installation & Setup
 
+### 1️⃣ Clone the repo
 ```bash
-# 1. Clone the repo
-git clone https://github.com/your-username/IBM-hr-attrition-predictor.git
-cd IBM-hr-attrition-predictor
+git clone https://github.com/your-username/fraudshield-ml.git
+cd fraudshield-ml
+```
 
-# 2. Create & activate a virtual environment
+### 2️⃣ Create virtual environment
+```bash
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+```
 
-# 3. Install dependencies
+### 3️⃣ Activate environment
+
+**Windows**
+```bash
+venv\Scripts\activate
+```
+
+**Mac/Linux**
+```bash
+source venv/bin/activate
+```
+
+### 4️⃣ Install requirements
+```bash
 pip install -r requirements.txt
+```
 
-# 4. (First time only) run the notebook to generate model artifacts
-jupyter notebook IBM_Attrition.ipynb
+### 5️⃣ Run the notebook first (to reproduce model files)
+```bash
+jupyter notebook Credit_Card_Fraud_Detection.ipynb
+```
 
-# 5. Launch the dashboard
+### 6️⃣ Run the Streamlit app
+```bash
 streamlit run app.py
+```
+
+---
+
+## requirements.txt
+```
+streamlit==1.38.0
+pandas==2.2.2
+scikit-learn==1.5.1
+joblib==1.4.2
+numpy==1.26.4
 ```
 
 ---
 
 ## Dataset
 
-[IBM HR Analytics Employee Attrition Dataset](https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset) — 1,470 employee records across Sales, R&D, and HR departments, publicly available on Kaggle.
+Available on Kaggle: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
 
-> Independent project built on IBM's publicly available dataset. Not affiliated with or endorsed by IBM.
-
+> Independent project built using a publicly available Kaggle dataset. Not affiliated with or endorsed by the dataset's original publishers.
 ---
 
-## What I'd Improve With More Time
-
-- Add SHAP-based per-prediction explanations instead of only global coefficients
-- Try threshold tuning to better balance precision/recall for HR's actual use case (would they rather over-flag or under-flag?)
-- Incorporate a time dimension — attrition is a *when*, not just a *whether*, and survival analysis could model that
-- Add authentication and a proper database backend for real HR-tool deployment
-
----
-
-## License
-
-MIT — see [LICENSE](./LICENSE) for details.
-
-<div align="center">
-
-Built by [Your Name](https://github.com/your-username) · [LinkedIn](#) · [Portfolio](#)
-
-</div>
+## Screenshots
+![img alt](https://github.com/nikhil-kumarrr/images/blob/main/Screenshot%202026-08-01%20151319.png?raw=true)
+![img alt](https://github.com/nikhil-kumarrr/images/blob/main/Screenshot%202026-08-01%20151345.png?raw=true)
