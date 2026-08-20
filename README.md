@@ -1,4 +1,4 @@
-# Credit Card Fraud Detection
+# Credit Card Fraud Detection 
 
 A ML-powered credit card fraud detection system built for real-time transaction risk scoring using Logistic Regression, Random Forest, Decision Tree, and KNN — with an interactive **Fraud Shield** dashboard built in Streamlit.
 
