@@ -10,7 +10,7 @@ Pick a real transaction from the dataset and instantly get an AI-powered fraud r
 
 - ML-based real-time transaction fraud risk prediction
 - 4 models trained and compared (Logistic Regression · Decision Tree · Random Forest · KNN)
-- Instant risk classification with probability scores
+- Instant risk classification with probability scores 
 - Fraud probability gauge, risk factor breakdown
 - Real transaction sampling (random / known legit / known fraud) — no fake or simulated inputs
 - Professional dark UI dashboard
