@@ -26,19 +26,38 @@ focuses on recall, precision and ROC-AUC instead.
 
 ## Approach
 
-1. Scale Amount and Time with StandardScaler
-2. Handle the class imbalance with a class-weighted Logistic Regression
-3. Evaluate on a stratified hold-out split using ROC-AUC, recall, precision and F1
-4. Serve the saved model through a Streamlit dashboard that scores real transactions
+1. Random undersampling: keep all 492 frauds and 492 random legit transactions (984 rows)
+2. Scale Amount and Time with StandardScaler
+3. Stratified 80/20 split, then compare Logistic Regression, Decision Tree, Random Forest and KNN
+4. Choose Logistic Regression: it matches Random Forest on test accuracy without overfitting (train 96.1% vs 100% for the tree models)
+5. Re-evaluate the chosen model on the real, imbalanced data (every row not used for training)
+6. Serve the saved model through a Streamlit dashboard that scores real transactions
 
 ## Results
 
+Model comparison on the balanced test set (197 transactions):
+
+| Model | Train accuracy | Test accuracy |
+| --- | --- | --- |
+| Logistic Regression | 96.1% | 93.4% |
+| Decision Tree | 100% | 89.3% |
+| Random Forest | 100% | 93.4% |
+| KNN | 95.3% | 92.4% |
+
+Logistic Regression reaches **0.978 ROC-AUC** on the balanced test set (fraud precision 0.97, recall 0.90).
+
+The balanced test set hides the real difficulty, so the model is also checked on the original imbalanced data (284,020 transactions, 98 frauds):
+
 | Metric | Value |
 | --- | --- |
-| ROC-AUC | 0.978 |
+| ROC-AUC | 0.977 |
+| Fraud recall | 0.898 |
+| Fraud precision | 0.0096 |
+| PR-AUC | 0.354 |
 
-Limitations: the features are anonymised, the data covers only two days of
-European card transactions, and a fixed 0.5 threshold is not tuned for cost.
+At the default 0.5 threshold the model catches about 90% of frauds, but flags roughly 100 legit transactions for every real fraud. Tuning the threshold for the cost of a false alarm is the main next step.
+
+Limitations: the features are anonymised and the data covers only two days of European card transactions.
 ## Project structure
 
 ~~~

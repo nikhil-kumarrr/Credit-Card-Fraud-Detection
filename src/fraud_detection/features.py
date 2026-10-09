@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 
 from fraud_detection.data import V_COLUMNS
 
-FEATURE_COLUMNS = [*V_COLUMNS, "scaled_amount", "scaled_time"]
+FEATURE_COLUMNS = ["Time", *V_COLUMNS, "Amount"]
 
 
 def fit_scalers(X: pd.DataFrame) -> tuple[StandardScaler, StandardScaler]:
