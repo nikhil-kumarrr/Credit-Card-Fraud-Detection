@@ -7,6 +7,8 @@ Real-time credit card transaction risk scoring with a machine learning model
 and an interactive Streamlit dashboard. The model reaches **0.978 ROC-AUC** on
 the public ULB dataset.
 
+**Live demo:** PASTE_YOUR_STREAMLIT_LINK_HERE
+
 ![Dashboard](docs/screenshots/dashboard.png)
 
 ## Problem
