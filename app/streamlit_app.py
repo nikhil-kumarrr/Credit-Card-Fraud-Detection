@@ -2,6 +2,9 @@ import math
 import streamlit as st
 import pandas as pd
 import joblib
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
 
 # ================= Page Config =================
 st.set_page_config(
@@ -117,15 +120,15 @@ div[data-testid="stSlider"] > div > div > div { background: #2e2e2e !important; 
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ================= Load Model Artifacts =================
-model = joblib.load('fraud_detection_model.pkl')
-scaler_amount = joblib.load('scaler_amount.pkl')
-scaler_time = joblib.load('scaler_time.pkl')
-feature_columns = joblib.load('feature_columns.pkl')
+model = joblib.load(ROOT / 'models' / 'fraud_detection_model.pkl')
+scaler_amount = joblib.load(ROOT / 'models' / 'scaler_amount.pkl')
+scaler_time = joblib.load(ROOT / 'models' / 'scaler_time.pkl')
+feature_columns = joblib.load(ROOT / 'models' / 'feature_columns.pkl')
 
 
 @st.cache_data
 def load_data():
-    return pd.read_csv('creditcard.csv.gz')
+    return pd.read_csv(ROOT / 'data' / 'creditcard.csv.gz')
 
 
 @st.cache_data
