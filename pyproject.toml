@@ -15,3 +15,8 @@ src = ["src", "tests", "app"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+[tool.coverage.run]
+source = ["src/fraud_detection"]
+
+[tool.coverage.report]
+show_missing = true

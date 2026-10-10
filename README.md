@@ -60,16 +60,18 @@ The balanced test set hides the real difficulty, so the model is also checked on
 At the default 0.5 threshold the model catches about 90% of frauds, but flags roughly 100 legit transactions for every real fraud. Tuning the threshold for the cost of a false alarm is the main next step.
 
 Limitations: the features are anonymised and the data covers only two days of European card transactions.
+
 ## Project structure
 
 ~~~
 app/streamlit_app.py        Streamlit dashboard
-src/fraud_detection/        data, features, train and predict modules
+src/fraud_detection/        data, features, train, predict and FastAPI modules
 tests/                      pytest test suite
 models/                     saved model, scalers and feature columns
 data/                       dataset (see data/README.md)
 notebooks/01_eda.ipynb      exploration and model experiments
-.github/workflows/ci.yml    lint and tests on every push
+.github/workflows/ci.yml    lint, format check and tests on every push
+CONTRIBUTING.md             how to set up, test and contribute
 ~~~
 
 ## Installation
@@ -83,6 +85,7 @@ pip install -r requirements.txt
 ~~~
 
 On Linux or Mac, activate with `source .venv/bin/activate`.
+
 ## Usage
 
 Run the dashboard:
@@ -107,19 +110,64 @@ predictor = FraudPredictor.from_dir("models")
 probabilities = predictor.predict_proba(transactions_df)
 ~~~
 
+## API
+
+A small FastAPI service serves the same model over HTTP.
+
+~~~
+pip install -r requirements-dev.txt
+uvicorn fraud_detection.api:app --app-dir src
+~~~
+
+Interactive docs are available at http://127.0.0.1:8000/docs.
+
+| Endpoint | Purpose |
+| --- | --- |
+| GET /health | Service status and version |
+| POST /predict?threshold=0.5 | Fraud probability, decision and risk level for 1 to 1000 transactions |
+
+Example request (a transaction needs Time, Amount and V1 to V28):
+
+~~~python
+import requests
+
+row = {"Time": 0.0, "Amount": 149.62, **{f"V{i}": 0.0 for i in range(1, 29)}}
+response = requests.post("http://127.0.0.1:8000/predict", json={"transactions": [row]})
+print(response.json())
+# {"threshold": 0.5, "predictions": [{"fraud_probability": ..., "is_fraud": ..., "risk_level": "low"}]}
+~~~
+
+Invalid input (negative amount, missing feature, empty batch, threshold outside 0 to 1) is rejected with HTTP 422.
+
 ## Development
 
 ~~~
 pip install -r requirements-dev.txt
-pytest
+pytest --cov
 ruff check src tests
+ruff format src tests
 ~~~
+
+The same lint, format and test steps run on every push through GitHub Actions.
+
+## Model card
+
+- Intended use: an educational and portfolio demo of fraud scoring. It is not meant for real payment decisions.
+- Training data: the public ULB credit card dataset (European cardholders, September 2013, two days of transactions). Features V1 to V28 are anonymised PCA components, so there are no personal details.
+- Training set: 984 rows (492 frauds and 492 random legit transactions) after random undersampling.
+- Performance: see Results above. ROC-AUC is about 0.977 on the real imbalanced data, but precision at the 0.5 threshold is under 1%.
+- Known limitations: undersampling throws away most legit transactions, the data is old and covers a short period, and the dashboard explanations only show model coefficients on anonymised features.
 
 ## Future improvements
 
-- Tune the decision threshold for the cost of a missed fraud
-- Compare against tree-based models and gradient boosting
+- Tune the decision threshold for the cost of a missed fraud versus a false alarm
+- Try gradient boosting and SMOTE or cost-sensitive learning instead of undersampling
 - Add precision-recall curves and SHAP explanations to the dashboard
+- Add a Dockerfile for the API
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Author
 
