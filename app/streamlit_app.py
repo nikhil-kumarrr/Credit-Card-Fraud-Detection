@@ -1,5 +1,6 @@
 import math
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import joblib
 from pathlib import Path
@@ -115,6 +116,18 @@ div[data-testid="stSlider"] > div > div > div { background: #2e2e2e !important; 
 .factor-text-sub { font-size: 11.5px; color: #9ca3af !important; }
 .factor-push-up { color: #f87171 !important; font-weight: 700; }
 .factor-push-down { color: #4ade80 !important; font-weight: 700; }
+
+/* ---- number input fix: dark field, light text ---- */
+div[data-testid="stNumberInput"] div[data-baseweb="input"],
+div[data-testid="stNumberInput"] div[data-baseweb="base-input"],
+div[data-testid="stNumberInput"] input {
+    background-color: #0a0a0a !important;
+    color: #f3f4f6 !important;
+    -webkit-text-fill-color: #f3f4f6 !important;
+}
+div[data-testid="stNumberInput"] div[data-baseweb="input"] { border: 1px solid #2e2e2e !important; border-radius: 10px !important; }
+div[data-testid="stNumberInput"] button { background-color: #262626 !important; color: #f3f4f6 !important; }
+div[data-testid="stNumberInput"] button:hover { background-color: #eab308 !important; color: #0a0a0a !important; }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -225,11 +238,12 @@ analyze = st.button("Analyze Transaction")
 
 
 # ================= Circular Ring Builder =================
-def build_ring(pct, size=170, stroke=12):
-    pct = max(0, min(100, pct))
+def build_ring(pct, size=170, stroke=14):
+    """Self-contained SVG ring (rendered in an iframe so nothing gets stripped)."""
+    pct = max(0.0, min(100.0, float(pct)))
     r = (size - stroke) / 2
     circumference = 2 * math.pi * r
-    offset = circumference * (1 - pct / 100)
+    filled = circumference * pct / 100
     cx = cy = size / 2
 
     if pct < 30:
@@ -239,23 +253,32 @@ def build_ring(pct, size=170, stroke=12):
     else:
         color = "#f87171"
 
-    html = f"""
-    <div class="ring-wrap">
-        <svg class="ring-svg" width="{size}" height="{size}" viewBox="0 0 {size} {size}">
-            <circle class="ring-track" cx="{cx}" cy="{cy}" r="{r}"></circle>
-            <circle class="ring-progress" cx="{cx}" cy="{cy}" r="{r}"
-                stroke="{color}"
-                stroke-dasharray="{circumference}"
-                style="--circumference:{circumference}; --offset:{offset}; stroke-dashoffset:{offset};">
-            </circle>
-        </svg>
-        <div class="ring-center-text">
-            <div class="ring-pct" style="color:{color} !important;">{pct:.1f}%</div>
-            <div class="ring-caption">Fraud Probability</div>
-        </div>
-    </div>
-    """
-    return html
+    return f"""
+<html><head><style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Inter:wght@400&display=swap');
+html, body {{ margin: 0; background: transparent; font-family: 'Inter', sans-serif; }}
+.wrap {{ position: relative; width: {size}px; height: {size}px; margin: 8px auto 0; }}
+svg {{ display: block; }}
+.track {{ fill: none; stroke: #2e2e2e; stroke-width: {stroke}; }}
+.bar {{ fill: none; stroke: {color}; stroke-width: {stroke}; stroke-linecap: round;
+        stroke-dasharray: {filled:.2f} {circumference:.2f};
+        animation: grow 1.1s ease-out; }}
+@keyframes grow {{ from {{ stroke-dasharray: 0 {circumference:.2f}; }}
+                   to   {{ stroke-dasharray: {filled:.2f} {circumference:.2f}; }} }}
+.center {{ position: absolute; inset: 0; display: flex; flex-direction: column;
+           align-items: center; justify-content: center; }}
+.pct {{ font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: {color}; }}
+.cap {{ font-size: 11px; color: #9ca3af; margin-top: 2px; }}
+</style></head><body>
+<div class="wrap">
+  <svg width="{size}" height="{size}" viewBox="0 0 {size} {size}">
+    <circle class="track" cx="{cx}" cy="{cy}" r="{r}"></circle>
+    <circle class="bar" cx="{cx}" cy="{cy}" r="{r}" transform="rotate(-90 {cx} {cy})"></circle>
+  </svg>
+  <div class="center"><div class="pct">{pct:.1f}%</div><div class="cap">Fraud Probability</div></div>
+</div>
+</body></html>
+"""
 
 
 # ================= Result Section =================
@@ -307,7 +330,7 @@ if analyze:
 
     with right:
         st.markdown('<div style="text-align:center;"><div class="gauge-tag">🛡️ RISK SCORE</div></div>', unsafe_allow_html=True)
-        st.markdown(build_ring(pct), unsafe_allow_html=True)
+        components.html(build_ring(pct), height=200)
 
     st.markdown('<div class="factors-title">Key Contributing Factors</div>', unsafe_allow_html=True)
 
