@@ -192,10 +192,10 @@ st.markdown("""
 <div class="hero-wrap">
     <div class="hero-badge"><span class="dot"></span>Credit Card Fraud Detection</div>
     <h1 class="hero-title">Fraud <span class="accent">Shield</span></h1>
-    <div class="hero-sub">Real-time transaction risk detection, powered by Machine Learning</div>
+    <div class="hero-sub">Transaction risk scoring powered by machine learning</div>
     <div class="hero-pills">
-        <div class="hero-pill gold">Bank-Grade Model</div>
-        <div class="hero-pill">97.8% AUC Score</div>
+        <div class="hero-pill gold">Logistic Regression</div>
+        <div class="hero-pill">0.978 ROC-AUC</div>
         <div class="hero-pill">Instant Results</div>
     </div>
 </div>

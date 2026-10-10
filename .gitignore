@@ -5,3 +5,9 @@ venv/
 .ipynb_checkpoints/
 .env
 .DS_Store
+
+.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+models/retrained/
