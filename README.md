@@ -10,7 +10,7 @@ Fraud Shield scores credit card transactions for fraud risk. It pairs a logistic
 
 ## Demo
 
-**Live app:** PASTE_YOUR_STREAMLIT_LINK_HERE
+**Live app:** https://....streamlit.app
 
 ![Fraud Shield dashboard, view 1](docs/screenshots/dashboard-1.png)
 
