@@ -12,7 +12,9 @@ Fraud Shield scores credit card transactions for fraud risk. It pairs a logistic
 
 **Live app:** PASTE_YOUR_STREAMLIT_LINK_HERE
 
-![Fraud Shield dashboard](docs/screenshots/dashboard.png)
+![Fraud Shield dashboard, view 1](docs/screenshots/dashboard-1.png)
+
+![Fraud Shield dashboard, view 2](docs/screenshots/dashboard-2.png)
 
 The dashboard pulls a real transaction from the dataset (with its genuine V1-V28 features), lets you edit the amount and hour, and returns a fraud probability, a risk level and the features that pushed the score up or down.
 
